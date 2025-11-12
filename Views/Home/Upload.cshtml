@@ -1,0 +1,30 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+	<title>Upload New</title>
+</head>
+<body>
+	<form asp-action="Upload" method="post" enctype="multipart/form-data">
+		<label for="photo">Обрати фото:</label>
+		<input type="file" id="photo" name="photo" accept="image/*" required>
+		<hr />
+		<label for="title">Назва:</label>
+		<input type="text" id="title" name="title" required>
+		<hr />
+		<label for="slug">Slug:</label>
+		<input type="text" id="slug" name="slug" required>
+		<hr />
+		<label for="content">Опис:</label>
+		<textarea id="content" name="content" required></textarea>
+		<hr />
+		<label for="summary">Заголовок:</label>
+		<input type="text" id="summary" name="summary" required>
+		<button type="submit">Завантажити</button>
+	</form>
+
+
+
+
+
+</body>
+</html>
