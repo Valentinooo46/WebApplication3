@@ -1,0 +1,40 @@
+﻿@model IEnumerable<WebApplication3.Models.Category>
+
+@{
+    ViewData["Title"] = "Categories";
+}
+
+<h2>Categories</h2>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Title</th>
+            <th>Priority</th>
+            <th>UrlSlug</th>
+            <th>Image</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var category in Model)
+        {
+            <tr> 
+                <td>@category.Title</td>
+                <td>@category.Priority</td>
+                <td>@category.UrlSlug</td>
+                <td>
+                    <img src="https://lohika.itstep.click/images/200_@category.Image" alt="@category.Title" width="100" />
+                </td>
+                <td>
+                    <a asp-action="Details" asp-route-id="@category.Id" class="btn btn-info">Details</a>
+                    <form asp-action="Delete" asp-route-id="@category.Id" method="post" style="display:inline;">
+                        <button type="submit" class="btn btn-danger">Delete</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<a asp-action="Create" class="btn btn-primary">Add New Category</a>

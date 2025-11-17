@@ -1,8 +1,10 @@
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Hosting;
 using WebApplication3.Controllers;
 using WebApplication3.Models;
-using Microsoft.Extensions.Hosting;
-using Microsoft.AspNetCore.Identity;
+using WebApplication3.Repositories;
+using WebApplication3.Services;
 
 
 namespace WebApplication3
@@ -15,9 +17,9 @@ namespace WebApplication3
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
-            builder.Services.AddDbContext<NewContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            
+            builder.Services.AddHttpClient<ICategoryRepository, CategoryRepository>();
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
+
 
 
 
@@ -29,7 +31,7 @@ namespace WebApplication3
                 app.UseHsts();
                 
             }
-            // Реєстрація сервісів
+            
             
 
             // Middleware для паузи
@@ -69,7 +71,7 @@ namespace WebApplication3
                 var key = Console.ReadKey(true).Key;
                 if (key == ConsoleKey.Q)
                 {
-                    Console.WriteLine($"Додано нових записів:{HomeController.count}");
+                    //Console.WriteLine($"Додано нових записів:{HomeController.count}");
                     lifetime.StopApplication();
                     break;
                 }
