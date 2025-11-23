@@ -19,11 +19,26 @@ namespace WebApplication3
             builder.Services.AddControllersWithViews();
             builder.Services.AddHttpClient<ICategoryRepository, CategoryRepository>();
             builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddDbContext<AppDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
+            {
+                options.Password.RequireDigit = true;
+
+                options.Password.RequireNonAlphanumeric = false;
+                options.Password.RequiredLength = 6;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
+            builder.Services.AddScoped<UserManager<ApplicationUser>>();
+            builder.Services.AddScoped<SignInManager<ApplicationUser>>();
+            builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 
 
 
             var app = builder.Build();
+            
 
             if (!app.Environment.IsDevelopment())
             {
@@ -51,6 +66,8 @@ namespace WebApplication3
             app.UseHttpsRedirection();
             app.UseStaticFiles();
             app.UseRouting();
+            app.UseAuthentication();
+
             app.UseAuthorization();
 
             app.MapControllerRoute(
