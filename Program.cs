@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 using WebApplication3.Controllers;
 using WebApplication3.Models;
 using WebApplication3.Repositories;
@@ -12,7 +13,7 @@ namespace WebApplication3
     public class Program
     {
         
-        public static void Main(string[] args)
+        public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -32,13 +33,20 @@ namespace WebApplication3
             .AddDefaultTokenProviders();
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
+            builder.Services.AddScoped<RoleManager<IdentityRole>>();
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
 
 
 
             var app = builder.Build();
-            
+            using (var scope = app.Services.CreateScope())
+            {
+                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                await SeedRoles.InitializeAsync(roleManager);
+            }
+
+
 
             if (!app.Environment.IsDevelopment())
             {
@@ -76,7 +84,7 @@ namespace WebApplication3
 
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
             Task.Run(() => CheckInputKey(lifetime));
-
+            
             app.Run();
         }
 

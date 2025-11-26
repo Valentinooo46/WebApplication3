@@ -12,16 +12,19 @@ namespace WebApplication3.Controllers
     {
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+        private readonly RoleManager<IdentityRole> _roleManager;
         private readonly IEmailSender _emailSender;
 
         public AccountController(UserManager<ApplicationUser> userManager,
-                                 SignInManager<ApplicationUser> signInManager,
+                                 SignInManager<ApplicationUser> signInManager,RoleManager<IdentityRole> roleManager,
                                  IEmailSender emailSender)
         {
             _userManager = userManager;
             _signInManager = signInManager;
+            _roleManager = roleManager;
             _emailSender = emailSender;
         }
+
 
        
         [HttpGet]
@@ -131,5 +134,50 @@ namespace WebApplication3.Controllers
         }
 
         public IActionResult ResetPasswordConfirmation() => View();
+
+
+
+        public async Task<IActionResult> EditRoles(string id)
+        {
+            var user = await _userManager.FindByIdAsync(id);
+            if (user == null) return NotFound();
+
+            var allRoles = _roleManager.Roles.ToList();
+            var userRoles = await _userManager.GetRolesAsync(user);
+
+            var model = new EditUserRolesViewModel
+            {
+                UserId = user.Id,
+                UserName = user.UserName,
+                Roles = allRoles.Select(r => new RoleSelection
+                {
+                    RoleName = r.Name,
+                    Selected = userRoles.Contains(r.Name)
+                }).ToList()
+            };
+
+            return View(model);
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> EditRoles(EditUserRolesViewModel model)
+        {
+            var user = await _userManager.FindByIdAsync(model.UserId);
+            if (user == null) return NotFound();
+
+            var currentRoles = await _userManager.GetRolesAsync(user);
+
+            // Забираємо всі ролі
+            await _userManager.RemoveFromRolesAsync(user, currentRoles);
+
+            // Додаємо вибрані
+            var selectedRoles = model.Roles.Where(r => r.Selected).Select(r => r.RoleName);
+            await _userManager.AddToRolesAsync(user, selectedRoles);
+
+            return RedirectToAction("Index"); // або куди тобі треба
+        }
+
+
     }
 }
