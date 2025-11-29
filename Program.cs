@@ -44,6 +44,9 @@ namespace WebApplication3
             {
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
                 await SeedRoles.InitializeAsync(roleManager);
+                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await ProductSeeder.SeedAsync(context);
+
             }
 
 

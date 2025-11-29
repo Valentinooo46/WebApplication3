@@ -1,0 +1,44 @@
+﻿@model List<Product>
+@using Microsoft.AspNetCore.Identity
+@inject SignInManager<ApplicationUser> SignInManager
+
+<h2>Список товарів</h2>
+
+<div class="row">
+    @foreach (var product in Model)
+    {
+        <div class="col-md-4">
+            <div class="card mb-3">
+                <div id="carousel-@product.Id" class="carousel slide" data-bs-ride="carousel">
+                    <div class="carousel-inner">
+                        @for (int i = 0; i < product.Images.Count; i++)
+                        {
+                            var img = product.Images[i];
+                            <div class="carousel-item @(i == 0 ? "active" : "")">
+                                <img src="@img.Url" class="d-block w-100" alt="@product.Name" />
+                            </div>
+                        }
+                    </div>
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#carousel-@product.Id" data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+                <div class="card-body">
+                    <h5 class="card-title">@product.Name</h5>
+                    <p class="card-text">@product.Description</p>
+                </div>
+            </div>
+        </div>
+        
+
+    }
+</div>
+@if (SignInManager.IsSignedIn(User))
+{
+    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+        <button type="submit" class="btn btn-danger">Вийти</button>
+    </form>
+}

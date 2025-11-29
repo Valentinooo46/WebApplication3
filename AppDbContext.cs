@@ -13,5 +13,17 @@ namespace WebApplication3
 
         // Твої власні DbSet-и
         public DbSet<ApplicationUser> Users { get; set; }
+        public DbSet<Product> Products { get; set; }
+
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+            builder.Entity<Product>()
+                .HasMany(p => p.Images)
+                .WithOne(i => i.Product)
+                .HasForeignKey(i => i.ProductId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+        }
     }
 }
