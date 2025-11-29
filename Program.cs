@@ -42,8 +42,9 @@ namespace WebApplication3
             var app = builder.Build();
             using (var scope = app.Services.CreateScope())
             {
+                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                await SeedRoles.InitializeAsync(roleManager);
+                await UserSeeder.SeedAsync(userManager,roleManager);
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 await ProductSeeder.SeedAsync(context);
 

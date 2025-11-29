@@ -29,7 +29,7 @@ namespace WebApplication3.Controllers
             _context = appDbContext;
             _emailSender = emailSender;
         }
-        [Authorize]
+        
         public IActionResult Index()
         {
             var products = _context.Products
