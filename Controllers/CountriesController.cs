@@ -12,14 +12,14 @@ namespace WebApplication3.Controllers
             _context = context;
         }
 
-        // GET: Countries (Список всех стран)
+        
         public async Task<IActionResult> Index()
         {
             var countries = await _context.Countries.ToListAsync();
             return View(countries);
         }
 
-        // GET: Countries/Details/5 (Детали конкретной страны)
+        
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)

@@ -22,7 +22,7 @@ namespace WebApplication3.Services
                 var context = scope.ServiceProvider.GetRequiredService<CountryDbContext>();
                 var httpClientFactory = scope.ServiceProvider.GetRequiredService<IHttpClientFactory>();
 
-                await context.Database.MigrateAsync(cancellationToken); // Apply migrations
+                await context.Database.MigrateAsync(cancellationToken); 
 
                 if (!context.Countries.Any())
                 {
@@ -52,14 +52,14 @@ namespace WebApplication3.Services
                 {
                     var imageBytes = await httpClient.GetByteArrayAsync(imageUrl, cancellationToken);
                     await File.WriteAllBytesAsync(imagePath, imageBytes, cancellationToken);
-                    country.ImagePath = $"/images/{imageName}"; // Relative path for web access
-                    country.ImageUrl = imageUrl; // Store original URL as well
+                    country.ImagePath = $"/images/{imageName}"; 
+                    country.ImageUrl = imageUrl; 
                 }
                 catch (HttpRequestException ex)
                 {
-                    // Handle exception if download fails
+                    
                     Console.WriteLine($"Error downloading image from {imageUrl}: {ex.Message}");
-                    country.ImagePath = "/images/placeholder.jpg"; // Fallback image
+                    country.ImagePath = "/images/placeholder.jpg"; 
                 }
 
                 context.Countries.Add(country);
