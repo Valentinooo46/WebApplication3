@@ -18,10 +18,19 @@ namespace WebApplication3
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
+
             builder.Services.AddHttpClient<ICategoryRepository, CategoryRepository>();
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
+            builder.Services.AddHttpClient();
+
+            builder.Services.AddHostedService<DataSeederHostedService>();
+
+
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            builder.Services.AddDbContext<CountryDbContext>(options =>
+                options.UseNpgsql(builder.Configuration.GetConnectionString("CountryConnection")));
+
+
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
@@ -31,6 +40,9 @@ namespace WebApplication3
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
+
+
+            builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<UserManager<ApplicationUser>>();
             builder.Services.AddScoped<SignInManager<ApplicationUser>>();
             builder.Services.AddScoped<RoleManager<IdentityRole>>();
