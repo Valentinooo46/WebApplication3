@@ -1,79 +1,103 @@
+using FluentValidation;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.OpenApi;
+
+using System;
 using System.Threading.Tasks;
 using WebApplication3.Controllers;
+using WebApplication3.DTOs;
+using WebApplication3.Mappers;
 using WebApplication3.Models;
 using WebApplication3.Repositories;
 using WebApplication3.Services;
-
+using WebApplication3.Validators;
 
 namespace WebApplication3
 {
     public class Program
     {
-        
         public static async Task Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
+            
             builder.Services.AddControllersWithViews();
 
+            
             builder.Services.AddHttpClient<ICategoryRepository, CategoryRepository>();
-            builder.Services.AddHttpClient();
 
-            builder.Services.AddHostedService<DataSeederHostedService>();
+           
 
+            
+            builder.Services.AddAutoMapper(typeof(WebApplication3.Mappers.UserProfile), typeof(MappingProfile));
 
+            
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
-            builder.Services.AddDbContext<CountryDbContext>(options =>
-                options.UseNpgsql(builder.Configuration.GetConnectionString("CountryConnection")));
 
-
+            
             builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
             {
                 options.Password.RequireDigit = true;
-
                 options.Password.RequireNonAlphanumeric = false;
                 options.Password.RequiredLength = 6;
             })
             .AddEntityFrameworkStores<AppDbContext>()
             .AddDefaultTokenProviders();
 
+            
+            builder.Services.AddScoped<IValidator<CountryCreateUpdateDto>, CountryCreateUpdateValidator>();
 
+            
             builder.Services.AddScoped<ICategoryService, CategoryService>();
-            builder.Services.AddScoped<UserManager<ApplicationUser>>();
-            builder.Services.AddScoped<SignInManager<ApplicationUser>>();
-            builder.Services.AddScoped<RoleManager<IdentityRole>>();
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
+            builder.Services.AddEndpointsApiExplorer();
+            builder.Services.AddSwaggerGen(c =>
+            {
+                c.SwaggerDoc("v1", new OpenApiInfo { Title = "Countries API", Version = "v1" });
+            });
 
-
+            
+            builder.Services.AddCors(options =>
+            {
+                options.AddPolicy("AllowReactDev", policy =>
+                {
+                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                });
+            });
 
             var app = builder.Build();
+
+            
             using (var scope = app.Services.CreateScope())
             {
                 var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
                 var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                await UserSeeder.SeedAsync(userManager,roleManager);
+                await UserSeeder.SeedAsync(userManager, roleManager);
+
                 var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                 await ProductSeeder.SeedAsync(context);
-
             }
 
-
-
-            if (!app.Environment.IsDevelopment())
+            
+            if (app.Environment.IsDevelopment())
+            {
+                app.UseDeveloperExceptionPage();
+                app.UseSwagger();
+                app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Countries API v1"));
+            }
+            else
             {
                 app.UseExceptionHandler("/Home/Error");
                 app.UseHsts();
-                
             }
-            
-            
 
-            // Middleware для паузи
+            
             app.Use(async (context, next) =>
             {
                 if (ServerState.IsPaused)
@@ -89,10 +113,17 @@ namespace WebApplication3
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseRouting();
-            app.UseAuthentication();
 
+           
+            app.UseRouting();
+
+            app.UseCors("AllowReactDev");
+
+            app.UseAuthentication();
             app.UseAuthorization();
+
+           
+            app.MapControllers();
 
             app.MapControllerRoute(
                 name: "default",
@@ -100,7 +131,7 @@ namespace WebApplication3
 
             var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
             Task.Run(() => CheckInputKey(lifetime));
-            
+
             app.Run();
         }
 
@@ -112,7 +143,6 @@ namespace WebApplication3
                 var key = Console.ReadKey(true).Key;
                 if (key == ConsoleKey.Q)
                 {
-                    //Console.WriteLine($"Додано нових записів:{HomeController.count}");
                     lifetime.StopApplication();
                     break;
                 }
@@ -128,9 +158,9 @@ namespace WebApplication3
             }
         }
     }
+
     public static class ServerState
     {
         public static volatile bool IsPaused = false;
     }
-
 }

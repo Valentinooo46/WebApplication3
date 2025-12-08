@@ -14,6 +14,8 @@ namespace WebApplication3
         // Твої власні DbSet-и
         public DbSet<ApplicationUser> Users { get; set; }
         public DbSet<Product> Products { get; set; }
+        public DbSet<Country> Countries { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -24,6 +26,18 @@ namespace WebApplication3
                 .HasForeignKey(i => i.ProductId)
                 .OnDelete(DeleteBehavior.Cascade);
 
+
+            builder.Entity<Country>()
+                .HasIndex(c => c.Name)
+                .IsUnique();
+
+            builder.Entity<Country>()
+                .HasIndex(c => c.Code)
+                .IsUnique();
+
+            builder.Entity<Country>()
+                .HasIndex(c => c.Slug)
+                .IsUnique();
         }
     }
 }
