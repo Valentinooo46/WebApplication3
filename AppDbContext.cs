@@ -16,6 +16,8 @@ namespace WebApplication3
         public DbSet<Product> Products { get; set; }
         public DbSet<Country> Countries { get; set; }
 
+        public DbSet<City> Cities { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -38,6 +40,24 @@ namespace WebApplication3
             builder.Entity<Country>()
                 .HasIndex(c => c.Slug)
                 .IsUnique();
+
+
+
+
+            builder.Entity<City>()
+                .HasIndex(c => new { c.CountryId, c.Name })
+                .IsUnique();
+
+            builder.Entity<City>()
+                .HasIndex(c => new { c.CountryId, c.Slug })
+                .IsUnique();
+
+            // Один Country має багато City (one-to-many)
+            builder.Entity<Country>()
+                .HasMany(c => c.Cities)
+                .WithOne(c => c.Country)
+                .HasForeignKey(c => c.CountryId)
+                .OnDelete(DeleteBehavior.Cascade);
         }
     }
 }

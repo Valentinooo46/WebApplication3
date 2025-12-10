@@ -33,7 +33,7 @@ namespace WebApplication3
            
 
             
-            builder.Services.AddAutoMapper(typeof(WebApplication3.Mappers.UserProfile), typeof(MappingProfile));
+            builder.Services.AddAutoMapper(typeof(WebApplication3.Mappers.UserProfile), typeof(MappingProfile),typeof(CityProfile));
 
             
             builder.Services.AddDbContext<AppDbContext>(options =>
@@ -51,8 +51,9 @@ namespace WebApplication3
 
             
             builder.Services.AddScoped<IValidator<CountryCreateUpdateDto>, CountryCreateUpdateValidator>();
+            builder.Services.AddScoped<IValidator<CityCreateUpdateDto>, CityCreateUpdateValidator>();
 
-            
+
             builder.Services.AddScoped<ICategoryService, CategoryService>();
             builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
 
