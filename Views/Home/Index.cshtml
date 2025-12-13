@@ -1,4 +1,4 @@
-﻿@model IEnumerable<WebApplication3.Models.New>
+﻿
 @{
 	ViewData["Title"] = "Home Page";
 }
@@ -16,55 +16,7 @@
 </head>
 
 <body>
-	<a href="@Url.Action("Upload")">Upload</a>
-	<img src="https://cdn-icons-png.flaticon.com/512/1986/1986937.png" class="moto_anim" alt="">
-	<div class="container border rounded p-3">
-		<div class="row border  rounded ">
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				Identifier
-			</div>
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				Title
-			</div>
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				Summary
-			</div>
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				Content
-			</div>
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				Photo
-			</div>
-			<div class="col-2 border bg-danger text-warning p-1 d-flex flex-row justify-content-center align-items-center">
-				URL
-			</div>
-		</div>
-		@foreach (New _new in Model)
-		{
-			<div class="row border rounded ">
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					@_new.ID
-				</div>
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					@_new.title
-				</div>
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					@_new.summary
-				</div>
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					@_new.content
-				</div>
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					<img src="@_new.image" alt="" class="img-fluid rounded-5">
-				</div>
-				<div class="col-2 border text-dark p-1 d-flex flex-row justify-content-center align-items-center">
-					https:// localhost/@_new.slug
-				</div>
-			</div>
-		}
-
-
-	</div>
+	
 
 	<!-- Bootstrap JS -->
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

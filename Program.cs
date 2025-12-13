@@ -9,18 +9,13 @@ using Microsoft.OpenApi;
 using System;
 using System.Threading.Tasks;
 using WebApplication3.Controllers;
-using WebApplication3.DTOs;
-using WebApplication3.Mappers;
-using WebApplication3.Models;
-using WebApplication3.Repositories;
-using WebApplication3.Services;
-using WebApplication3.Validators;
+
 
 namespace WebApplication3
 {
     public class Program
     {
-        public static async Task Main(string[] args)
+        public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
@@ -28,34 +23,21 @@ namespace WebApplication3
             builder.Services.AddControllersWithViews();
 
             
-            builder.Services.AddHttpClient<ICategoryRepository, CategoryRepository>();
+          
 
            
 
             
-            builder.Services.AddAutoMapper(typeof(WebApplication3.Mappers.UserProfile), typeof(MappingProfile),typeof(CityProfile));
-
+            
             
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
             
-            builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
-            {
-                options.Password.RequireDigit = true;
-                options.Password.RequireNonAlphanumeric = false;
-                options.Password.RequiredLength = 6;
-            })
-            .AddEntityFrameworkStores<AppDbContext>()
-            .AddDefaultTokenProviders();
+           
 
             
-            builder.Services.AddScoped<IValidator<CountryCreateUpdateDto>, CountryCreateUpdateValidator>();
-            builder.Services.AddScoped<IValidator<CityCreateUpdateDto>, CityCreateUpdateValidator>();
-
-
-            builder.Services.AddScoped<ICategoryService, CategoryService>();
-            builder.Services.AddScoped<IEmailSender, SmtpEmailSender>();
+            
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -75,15 +57,7 @@ namespace WebApplication3
             var app = builder.Build();
 
             
-            using (var scope = app.Services.CreateScope())
-            {
-                var userManager = scope.ServiceProvider.GetRequiredService<UserManager<ApplicationUser>>();
-                var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
-                await UserSeeder.SeedAsync(userManager, roleManager);
-
-                var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-                await ProductSeeder.SeedAsync(context);
-            }
+            
 
             
             if (app.Environment.IsDevelopment())
