@@ -1,14 +1,20 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
 
 using System;
+using System.Text;
 using System.Threading.Tasks;
 using WebApplication3.Controllers;
+using WebApplication3.Models;
+using WebApplication3.Services;
+using Microsoft.AspNetCore.Authentication;
 
 
 namespace WebApplication3
@@ -32,12 +38,25 @@ namespace WebApplication3
             
             builder.Services.AddDbContext<AppDbContext>(options =>
                 options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+            // Identity
+            builder.Services.AddIdentity<AppUser, IdentityRole>(opts =>
+            {
+                opts.User.RequireUniqueEmail = true;
+                // Dev-friendly passwords; tighten for prod
+                opts.Password.RequiredLength = 6;
+                opts.Password.RequireDigit = false;
+                opts.Password.RequireUppercase = false;
+                opts.Password.RequireNonAlphanumeric = false;
+            })
+            .AddEntityFrameworkStores<AppDbContext>()
+            .AddDefaultTokenProviders();
 
-            
-           
 
-            
-            
+            builder.Services.AddHttpClient();
+
+
+            builder.Services.Configure<GoogleSettings>(builder.Configuration.GetSection("Google"));
+            builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
@@ -50,16 +69,47 @@ namespace WebApplication3
             {
                 options.AddPolicy("AllowReactDev", policy =>
                 {
-                    policy.AllowAnyOrigin().AllowAnyHeader().AllowAnyMethod();
+                    policy.WithOrigins("http://localhost:5173").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
                 });
             });
+            var jwtKey = builder.Configuration["Jwt:Key"] ?? throw new InvalidOperationException("Jwt:Key missing");
+            var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "WebApplication3";
+            var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "WebApplication3.Web";
+            var signingKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey));
+
+            // Authentication (Identity cookies + JWT + Google)
+            // Set default scheme to JWT for API calls; Identity uses cookies internally for external flows
+            builder.Services.AddAuthentication(options =>
+            {
+                options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+                options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+            })
+            .AddJwtBearer(options =>
+            {
+                options.RequireHttpsMetadata = false; // enable true in prod
+                options.SaveToken = true;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true,
+                    ValidateAudience = true,
+                    ValidateLifetime = true,
+                    ValidateIssuerSigningKey = true,
+                    ValidIssuer = jwtIssuer,
+                    ValidAudience = jwtAudience,
+                    IssuerSigningKey = signingKey,
+                    ClockSkew = TimeSpan.FromMinutes(2)
+                };
+            });
+            
+
+            builder.Services.AddAuthorization();
+
+            // ... (інші using та конфігурації лишаються без змін)
 
             var app = builder.Build();
 
-            
-            
+            // Виконання міграцій тощо...
 
-            
             if (app.Environment.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -72,7 +122,6 @@ namespace WebApplication3
                 app.UseHsts();
             }
 
-            
             app.Use(async (context, next) =>
             {
                 if (ServerState.IsPaused)
@@ -89,24 +138,24 @@ namespace WebApplication3
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-           
+            // 1) Спочатку роутинг
             app.UseRouting();
 
+            // 2) Потім CORS (після UseRouting, ДО Authentication/Authorization)
             app.UseCors("AllowReactDev");
 
+            // 3) Далі аутентифікація/авторизація
             app.UseAuthentication();
             app.UseAuthorization();
 
-           
+            // 4) І потім мапінг контролерів (endpoints)
             app.MapControllers();
 
             app.MapControllerRoute(
                 name: "default",
                 pattern: "{controller=Home}/{action=Index}/{id?}");
 
-            var lifetime = app.Services.GetRequiredService<IHostApplicationLifetime>();
-            Task.Run(() => CheckInputKey(lifetime));
-
+            // ... інші служби/запуски
             app.Run();
         }
 
