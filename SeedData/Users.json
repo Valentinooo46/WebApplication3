@@ -1,0 +1,17 @@
+[
+  {
+    "Email": "alice@example.com",
+    "Password": "Passw0rd1",
+    "FirstName": "Alice",
+    "LastName": "Ivanova",
+    "IconUrl": "https://example.com/avatars/alice.png",
+    "UserName": "alice@example.com"
+  },
+  {
+    "Email": "bob@example.com",
+    "Password": "Secret123",
+    "FirstName": "Bob",
+    "LastName": "Petrov",
+    "IconUrl": ""
+  }
+]

@@ -7,6 +7,12 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="remote-app\src\components\CitiesList.tsx" />
+	  <None Remove="remote-app\src\components\CountriesList.tsx" />
+	  <None Remove="remote-app\src\FlightsTable.tsx" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Include="wwwroot\css\style.css" />
 		<PackageReference Include="AutoMapper" Version="12.0.0" />
 		<PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="12.0.0" />
@@ -36,6 +42,8 @@
 		
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+		<PackageReference Include="Quartz" Version="3.15.1" />
+		<PackageReference Include="Quartz.Extensions.Hosting" Version="3.15.1" />
 		<PackageReference Include="SixLabors.ImageSharp" Version="3.1.12" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="10.0.1" />
 		
@@ -46,12 +54,17 @@
 	  <Folder Include="Mappers\" />
 	  <Folder Include="Migrations\" />
 	  <Folder Include="Repositories\" />
-	  <Folder Include="SeedData\" />
 	  <Folder Include="Validators\" />
 	  <Folder Include="wwwroot\uploads\large\" />
 	  <Folder Include="wwwroot\uploads\medium\" />
 	  <Folder Include="wwwroot\uploads\small\" />
 	  <Folder Include="wwwroot\images\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <TypeScriptCompile Include="remote-app\src\components\CitiesList.tsx" />
+	  <TypeScriptCompile Include="remote-app\src\components\CountriesList.tsx" />
+	  <TypeScriptCompile Include="remote-app\src\components\FlightsTable.tsx" />
 	</ItemGroup>
 
 

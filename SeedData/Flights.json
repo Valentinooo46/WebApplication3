@@ -1,0 +1,18 @@
+[
+  {
+    "Id": 1,
+    "Number": "PS101",
+    "DepartureCityId": 1,
+    "ArrivalCityId": 3,
+    "StatusId": 1,
+    "UserId": 1
+  },
+  {
+    "Id": 2,
+    "Number": "LO202",
+    "DepartureCityId": 3,
+    "ArrivalCityId": 2,
+    "StatusId": 2,
+    "UserId": 2
+  }
+]

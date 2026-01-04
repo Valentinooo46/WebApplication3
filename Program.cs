@@ -1,4 +1,5 @@
 using FluentValidation;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
@@ -7,14 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi;
-
+using Quartz;
 using System;
 using System.Text;
 using System.Threading.Tasks;
 using WebApplication3.Controllers;
 using WebApplication3.Models;
+using WebApplication3.SeedData;
 using WebApplication3.Services;
-using Microsoft.AspNetCore.Authentication;
 
 
 namespace WebApplication3
@@ -57,6 +58,24 @@ namespace WebApplication3
 
             builder.Services.Configure<GoogleSettings>(builder.Configuration.GetSection("Google"));
             builder.Services.Configure<JwtSettings>(builder.Configuration.GetSection("Jwt"));
+            // Quartz
+            builder.Services.AddQuartz(q =>
+            {
+                q.UseMicrosoftDependencyInjectionJobFactory();
+
+                // –еЇструЇмо джобу
+                var jobKey = new JobKey("SeedDatabaseJob");
+                q.AddJob<SeedDatabaseJob>(opts => opts.WithIdentity(jobKey));
+
+                // “риггер Ч запуск при старт≥ ≥ кожн≥ 24 години
+                q.AddTrigger(opts => opts
+                    .ForJob(jobKey)
+                    .WithIdentity("SeedDatabaseJob-trigger")
+                    .StartNow()
+                    .WithSimpleSchedule(x => x.WithIntervalInHours(24).RepeatForever()));
+            });
+
+            builder.Services.AddQuartzHostedService(q => q.WaitForJobsToComplete = true);
 
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(c =>
