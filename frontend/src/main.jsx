@@ -1,43 +1,71 @@
-﻿import React, { Suspense } from "react";
+﻿import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-
-import App from "./App";
-import Callback from "./pages/Callback";
-import Profile from "./pages/Profile";
-import Login from "./pages/Login";
-import Register from "./pages/Register";
-import LoginLocal from "./pages/LoginLocal";
-
 import "./styles.css";
 
-// 👇 ВАЖЛИВО: викликаємо mod(), бо remoteEntry повертає функцію
-const FlightsTable = React.lazy(() =>
-    import("remoteApp/FlightsTable").then(mod => ({ default: mod.default }))
-);
+function RemoteAdminLoader() {
+  const [RemoteComp, setRemoteComp] = useState(null);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let mounted = true;
+      console.log('React(host):', React?.version);
+    (async () => {
+      try {
+        const mod = await import("remoteApp/Admin");
+        console.log("Remote module:", mod);
+        const exported = mod && (mod.default ?? mod);
+
+        console.log("Remote exported value:", exported);
+
+        // Если экспорт — готовый React-элемент (объект с $$typeof)
+        if (exported && typeof exported === "object" && exported.$$typeof) {
+          if (mounted) setRemoteComp(() => () => exported);
+          return;
+        }
+
+        // Если экспорт — функциональный или классовый компонент
+        if (typeof exported === "function") {
+          if (mounted) setRemoteComp(() => exported);
+          return;
+        }
+
+        // Если экспорт — namespace (модуль) и содержит возможный компонент внутри
+        if (exported && typeof exported === "object") {
+          const candidate =
+            exported.Admin || exported.default || exported.Component || null;
+          if (candidate) {
+            if (typeof candidate === "function") {
+              if (mounted) setRemoteComp(() => candidate);
+              return;
+            }
+            if (candidate && typeof candidate === "object" && candidate.$$typeof) {
+              if (mounted) setRemoteComp(() => () => candidate);
+              return;
+            }
+          }
+        }
+
+        throw new Error("Unsupported remote export shape");
+      } catch (e) {
+        console.error("Failed to load remote Admin:", e);
+        if (mounted) setError(e);
+      }
+    })();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
+
+  if (error) return <div>Ошибка загрузки админки: {String(error)}</div>;
+  if (!RemoteComp) return <div>Загрузка админки...</div>;
+
+  const C = RemoteComp;
+  return <C />;
+}
 
 createRoot(document.getElementById("root")).render(
-    <React.StrictMode>
-        <BrowserRouter>
-            <Routes>
-                <Route path="/" element={<App />}>
-                    <Route index element={<Login />} />
-                    <Route path="login-local" element={<LoginLocal />} />
-                    <Route path="register" element={<Register />} />
-                    <Route path="auth/callback" element={<Callback />} />
-                    <Route path="profile" element={<Profile />} />
-
-                    {/* Remote route */}
-                    <Route
-                        path="flights"
-                        element={
-                            <Suspense fallback={<div>Loading remote component...</div>}>
-                                <FlightsTable />
-                            </Suspense>
-                        }
-                    />
-                </Route>
-            </Routes>
-        </BrowserRouter>
-    </React.StrictMode>
+  <React.StrictMode>
+    <RemoteAdminLoader />
+  </React.StrictMode>
 );

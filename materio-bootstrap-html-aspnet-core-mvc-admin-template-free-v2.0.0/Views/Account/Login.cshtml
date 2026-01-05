@@ -1,0 +1,73 @@
+@model AspnetCoreMvcFull.Models.ViewModels.LoginViewModel
+@{
+    ViewData["Title"] = "Вхід";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Materio</title>
+    <link rel="stylesheet" href="~/css/core.css" />
+    <link rel="stylesheet" href="~/css/theme-default.css" />
+    <link rel="stylesheet" href="~/vendor/css/pages/page-auth.css" />
+</head>
+<body>
+    <div class="container-xxl">
+        <div class="authentication-wrapper authentication-basic container-p-y">
+            <div class="authentication-inner">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="app-brand justify-content-center mb-4">
+                            <a href="/" class="app-brand-link gap-2">
+                                <span class="app-brand-text demo text-body fw-bold">Materio</span>
+                            </a>
+                        </div>
+                        <h4 class="mb-2">Ласкаво просимо! </h4>
+                        <p class="mb-4">Будь ласка, увійдіть у свій акаунт</p>
+
+                        <form asp-action="Login" asp-controller="Account" method="post">
+                            <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+                            <div class="mb-3">
+                                <label asp-for="Email" class="form-label">Email</label>
+                                <input asp-for="Email" class="form-control" placeholder="Введіть ваш email" autofocus />
+                                <span asp-validation-for="Email" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3 form-password-toggle">
+                                <div class="d-flex justify-content-between">
+                                    <label asp-for="Password" class="form-label">Пароль</label>
+                                </div>
+                                <div class="input-group input-group-merge">
+                                    <input asp-for="Password" type="password" class="form-control" placeholder="&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;&#xb7;" />
+                                </div>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <div class="form-check">
+                                    <input asp-for="RememberMe" class="form-check-input" type="checkbox" />
+                                    <label asp-for="RememberMe" class="form-check-label">
+                                        Запам'ятати мене
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <button class="btn btn-primary d-grid w-100" type="submit">Увійти</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="~/vendor/libs/jquery/jquery.js"></script>
+    <script src="~/vendor/js/bootstrap.js"></script>
+    @await Html.PartialAsync("_ValidationScriptsPartial")
+</body>
+</html>
