@@ -1,0 +1,215 @@
+@model AdminLocationsViewModel
+@{
+    ViewData["Title"] = "Керування країнами та містами";
+    var flatCities = Model.Countries
+        .SelectMany(c => c.Cities.Select(city => (City: city, Country: c)))
+        .OrderBy(pair => pair.Country.Name)
+        .ThenBy(pair => pair.City.Name)
+        .ToList();
+}
+
+@if (TempData["SuccessMessage"] is string successMessage)
+{
+  <div class="alert alert-success alert-dismissible fade show" role="alert">
+    <i class="ri-checkbox-circle-line me-1"></i>@successMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+
+@if (TempData["ErrorMessage"] is string errorMessage)
+{
+  <div class="alert alert-danger alert-dismissible fade show" role="alert">
+    <i class="ri-error-warning-line me-1"></i>@errorMessage
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+}
+
+<div class="row g-6">
+  <div class="col-12">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-2">
+      <div>
+        <h4 class="mb-1">Локації</h4>
+        <p class="text-muted mb-0">Додавайте, редагуйте та видаляйте країни й міста, використовуючи стандартні компоненти шаблону.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-1">Країни</h5>
+        <small class="text-muted">Управління переліком країн</small>
+      </div>
+      <div class="card-body">
+        <form asp-action="CreateCountry" method="post" class="mb-4">
+          <div class="form-floating form-floating-outline mb-3">
+            <input asp-for="CountryForm.Name" class="form-control" placeholder="Україна" />
+            <label asp-for="CountryForm.Name"></label>
+            <span asp-validation-for="CountryForm.Name" class="text-danger small"></span>
+          </div>
+          <div class="d-flex justify-content-end">
+            <button type="submit" class="btn btn-primary">
+              <i class="ri-add-line me-1"></i>Додати країну
+            </button>
+          </div>
+        </form>
+
+        <div class="table-responsive">
+          <table class="table table-hover">
+            <thead>
+              <tr>
+                <th>Назва</th>
+                <th class="text-center">К-сть міст</th>
+                <th class="text-end">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (!Model.Countries.Any())
+              {
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-4">Список порожній.</td>
+                </tr>
+              }
+              else
+              {
+                foreach (var country in Model.Countries)
+                {
+                  <tr>
+                    <td>
+                      <span class="fw-semibold">@country.Name</span>
+                    </td>
+                    <td class="text-center">@country.Cities.Count</td>
+                    <td class="text-end">
+                      <div class="btn-group">
+                        <a asp-action="EditCountry"
+                           asp-route-id="@country.Id"
+                           class="btn btn-sm btn-outline-secondary">
+                          <i class="ri-edit-line me-1"></i>Редагувати
+                        </a>
+                        <form asp-action="DeleteCountry"
+                              method="post"
+                              class="d-inline">
+                          @Html.AntiForgeryToken()
+                          <input type="hidden" name="id" value="@country.Id" />
+                          <button type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Видалити країну &quot;@country.Name&quot; разом із містами?');">
+                            <i class="ri-delete-bin-6-line me-1"></i>Видалити
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-lg-6">
+    <div class="card h-100">
+      <div class="card-header">
+        <h5 class="mb-1">Міста</h5>
+        <small class="text-muted">Створюйте та керуйте містами всередині країн</small>
+      </div>
+      <div class="card-body">
+        @if (!Model.CountryOptions.Any())
+        {
+          <div class="alert alert-warning mb-4">
+            <i class="ri-error-warning-line me-1"></i>
+            Спочатку додайте хоча б одну країну, щоб створювати міста.
+          </div>
+        }
+        else
+        {
+          <form asp-action="CreateCity" method="post" class="mb-4">
+            <div class="row g-4">
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <input asp-for="CityForm.Name" class="form-control" placeholder="Львів" />
+                  <label asp-for="CityForm.Name"></label>
+                  <span asp-validation-for="CityForm.Name" class="text-danger small"></span>
+                </div>
+              </div>
+              <div class="col-12">
+                <div class="form-floating form-floating-outline">
+                  <select asp-for="CityForm.CountryId"
+                          asp-items="Model.CountryOptions"
+                          class="form-select">
+                    <option value="">Оберіть країну</option>
+                  </select>
+                  <label asp-for="CityForm.CountryId"></label>
+                  <span asp-validation-for="CityForm.CountryId" class="text-danger small"></span>
+                </div>
+              </div>
+            </div>
+            <div class="d-flex justify-content-end mt-4">
+              <button type="submit" class="btn btn-primary">
+                <i class="ri-add-line me-1"></i>Додати місто
+              </button>
+            </div>
+          </form>
+        }
+
+        <div class="table-responsive">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th>Місто</th>
+                <th>Країна</th>
+                <th class="text-end">Дії</th>
+              </tr>
+            </thead>
+            <tbody>
+              @if (!flatCities.Any())
+              {
+                <tr>
+                  <td colspan="3" class="text-center text-muted py-4">Поки що немає жодного міста.</td>
+                </tr>
+              }
+              else
+              {
+                foreach (var entry in flatCities)
+                {
+                  <tr>
+                    <td>@entry.City.Name</td>
+                    <td>
+                      <span class="badge bg-label-success">@entry.Country.Name</span>
+                    </td>
+                    <td class="text-end">
+                      <div class="btn-group">
+                        <a asp-action="EditCity"
+                           asp-route-id="@entry.City.Id"
+                           class="btn btn-sm btn-outline-secondary">
+                          <i class="ri-edit-line me-1"></i>Редагувати
+                        </a>
+                        <form asp-action="DeleteCity"
+                              method="post"
+                              class="d-inline">
+                          @Html.AntiForgeryToken()
+                          <input type="hidden" name="id" value="@entry.City.Id" />
+                          <button type="submit"
+                                  class="btn btn-sm btn-outline-danger"
+                                  onclick="return confirm('Видалити місто &quot;@entry.City.Name&quot;?');">
+                            <i class="ri-delete-bin-6-line me-1"></i>Видалити
+                          </button>
+                        </form>
+                      </div>
+                    </td>
+                  </tr>
+                }
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section PageScripts {
+  <partial name="_ValidationScriptsPartial" />
+}

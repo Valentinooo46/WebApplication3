@@ -18,7 +18,24 @@
     }
   <title>@title | @appName - Asp.Net Core MVC Free Admin Template</title>
   <meta name="description" content="" />
-
+	<script>
+		    (function () {
+		      try {
+		        var storedTheme = localStorage.getItem('preferredTheme');
+		        if (storedTheme === 'dark') {
+		          var root = document.documentElement;
+		          if (root.classList.contains('light-style')) {
+		            root.classList.remove('light-style');
+		          }
+		          if (!root.classList.contains('dark-style')) {
+		            root.classList.add('dark-style');
+		          }
+		        }
+		      } catch (e) {
+		        console.warn('Theme preference could not be applied', e);
+		      }
+		    })();
+		  </script>
   <!-- Canonical SEO -->
   <link rel="canonical" href='@productPage'>
   <!-- Favicon -->
@@ -53,6 +70,7 @@
 
   <!-- Main JS-->
   <script src='~/js/main.js'></script>
+	<script src='~/js/theme-toggle.js' asp-append-version="true"></script>
 
   <!-- Page Scripts-->
   @RenderSection("PageScripts", required: false)

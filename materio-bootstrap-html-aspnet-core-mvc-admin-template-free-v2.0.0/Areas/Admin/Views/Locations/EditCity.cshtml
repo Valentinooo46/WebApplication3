@@ -1,0 +1,50 @@
+@model CityEditorViewModel
+@{
+    ViewData["Title"] = "Редагування міста";
+}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card">
+      <div class="card-header d-flex align-items-center justify-content-between">
+        <div>
+          <h5 class="mb-1">Редагування міста</h5>
+          <small class="text-muted">Оновіть назву та країну</small>
+        </div>
+        <a asp-action="Index" class="btn btn-text-secondary">
+          <i class="ri-arrow-go-back-line me-1"></i>Повернутись
+        </a>
+      </div>
+      <div class="card-body">
+        <form asp-action="EditCity" method="post">
+          @Html.AntiForgeryToken()
+          <input asp-for="City.Id" type="hidden" />
+          <div class="form-floating form-floating-outline mb-4">
+            <input asp-for="City.Name" class="form-control" placeholder="Назва міста" />
+            <label asp-for="City.Name"></label>
+            <span asp-validation-for="City.Name" class="text-danger small"></span>
+          </div>
+          <div class="form-floating form-floating-outline mb-4">
+            <select asp-for="City.CountryId"
+                    asp-items="Model.CountryOptions"
+                    class="form-select">
+              <option value="">Оберіть країну</option>
+            </select>
+            <label asp-for="City.CountryId"></label>
+            <span asp-validation-for="City.CountryId" class="text-danger small"></span>
+          </div>
+          <div class="d-flex justify-content-end gap-2">
+            <a asp-action="Index" class="btn btn-outline-secondary">Скасувати</a>
+            <button type="submit" class="btn btn-primary">
+              <i class="ri-save-3-line me-1"></i>Зберегти
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+@section PageScripts {
+  <partial name="_ValidationScriptsPartial" />
+}

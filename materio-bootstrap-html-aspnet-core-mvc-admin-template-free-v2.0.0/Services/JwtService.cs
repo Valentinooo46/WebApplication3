@@ -1,10 +1,10 @@
-using Microsoft.Extensions.Options;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 using AspnetCoreMvcFull.Models;
 using AspnetCoreMvcFull.Models.Settings;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AspnetCoreMvcFull.Services
 {
@@ -17,18 +17,23 @@ namespace AspnetCoreMvcFull.Services
       _jwtSettings = jwtSettings.Value;
     }
 
-    public string GenerateToken(AppUser user, IList<string> roles)
+    public string GenerateToken(AppUser user, IList<string> roles, TimeSpan? lifetime = null)
     {
-      var claims = new List<Claim>
-            {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
-                new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id),
-                new Claim(ClaimTypes.Name, user.UserName ?? "")
-            };
+      var effectiveLifetime = lifetime ?? TimeSpan.FromMinutes(_jwtSettings.ExpiryInMinutes);
+      if (effectiveLifetime <= TimeSpan.Zero)
+      {
+        effectiveLifetime = TimeSpan.FromMinutes(60);
+      }
 
-      // Додаємо ролі до claims
+      var claims = new List<Claim>
+      {
+        new Claim(JwtRegisteredClaimNames.Sub, user.Id),
+        new Claim(JwtRegisteredClaimNames.Email, user.Email ?? ""),
+        new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
+        new Claim(ClaimTypes.NameIdentifier, user.Id),
+        new Claim(ClaimTypes.Name, user.UserName ?? "")
+      };
+
       foreach (var role in roles)
       {
         claims.Add(new Claim(ClaimTypes.Role, role));
@@ -36,14 +41,14 @@ namespace AspnetCoreMvcFull.Services
 
       var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtSettings.SecretKey));
       var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+      var expiresAt = DateTime.UtcNow.Add(effectiveLifetime);
 
       var token = new JwtSecurityToken(
-          issuer: _jwtSettings.Issuer,
-          audience: _jwtSettings.Audience,
-          claims: claims,
-          expires: DateTime.UtcNow.AddMinutes(_jwtSettings.ExpiryInMinutes),
-          signingCredentials: credentials
-      );
+        issuer: _jwtSettings.Issuer,
+        audience: _jwtSettings.Audience,
+        claims: claims,
+        expires: expiresAt,
+        signingCredentials: credentials);
 
       return new JwtSecurityTokenHandler().WriteToken(token);
     }
@@ -65,7 +70,7 @@ namespace AspnetCoreMvcFull.Services
           ValidAudience = _jwtSettings.Audience,
           ValidateLifetime = true,
           ClockSkew = TimeSpan.Zero
-        }, out SecurityToken validatedToken);
+        }, out _);
 
         return true;
       }

@@ -1,8 +1,9 @@
+using AspnetCoreMvcFull.Models;
 using AspnetCoreMvcFull.Models.ViewModels;
 using AspnetCoreMvcFull.Services;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using AspnetCoreMvcFull.Models;
 
 
 namespace AspnetCoreMvcFull.Controllers
@@ -13,17 +14,20 @@ namespace AspnetCoreMvcFull.Controllers
     private readonly UserManager<AppUser> _userManager;
     private readonly IJwtService _jwtService;
     private readonly ILogger<AccountController> _logger;
+    private readonly IWebHostEnvironment _environment;
 
     public AccountController(
         SignInManager<AppUser> signInManager,
         UserManager<AppUser> userManager,
         IJwtService jwtService,
-        ILogger<AccountController> logger)
+        ILogger<AccountController> logger,
+        IWebHostEnvironment environment)
     {
       _signInManager = signInManager;
       _userManager = userManager;
       _jwtService = jwtService;
       _logger = logger;
+      _environment = environment;
     }
 
     [HttpGet]
@@ -59,20 +63,27 @@ namespace AspnetCoreMvcFull.Controllers
 
       if (result.Succeeded)
       {
-        _logger.LogInformation($"Користувач {user.Email} успішно увійшов");
+        _logger.LogInformation("Користувач {Email} успішно увійшов", user.Email);
 
-        // Генерація JWT токену
         var roles = await _userManager.GetRolesAsync(user);
         var token = _jwtService.GenerateToken(user, roles);
 
-        // Зберігаємо токен у cookie
-        Response.Cookies.Append("AuthToken", token, new CookieOptions
+        var isForwardedHttps = string.Equals(
+            Request.Headers["X-Forwarded-Proto"],
+            "https",
+            StringComparison.OrdinalIgnoreCase);
+
+        var isSecureRequest = Request.IsHttps || isForwardedHttps;
+
+        var cookieOptions = new CookieOptions
         {
           HttpOnly = true,
-          Secure = true,
-          SameSite = SameSiteMode.Strict,
+          Secure = isSecureRequest,
+          SameSite = isSecureRequest ? SameSiteMode.None : SameSiteMode.Lax,
           Expires = DateTimeOffset.UtcNow.AddMinutes(60)
-        });
+        };
+
+        Response.Cookies.Append("AuthToken", token, cookieOptions);
 
         if (!string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl))
         {
@@ -84,8 +95,8 @@ namespace AspnetCoreMvcFull.Controllers
 
       if (result.IsLockedOut)
       {
-        _logger.LogWarning($"Акаунт користувача {user.Email} заблокований");
-        ModelState.AddModelError(string.Empty, "Акаунт заблокований");
+        _logger.LogWarning("Акаунт користувача {Email} заблокований", user.Email);
+        ModelState.AddModelError(string.Empty, "Акаунт заблок ований");
         return View(model);
       }
 
