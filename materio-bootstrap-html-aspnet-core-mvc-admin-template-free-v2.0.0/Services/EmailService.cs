@@ -35,8 +35,7 @@ namespace AspnetCoreMvcFull.Services
 
         using (var client = new SmtpClient())
         {
-          await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort,
-              _emailSettings.EnableSsl ? SecureSocketOptions.StartTls : SecureSocketOptions.None);
+          await client.ConnectAsync(_emailSettings.SmtpServer, _emailSettings.SmtpPort, SecureSocketOptions.Auto);
 
           await client.AuthenticateAsync(_emailSettings.Username, _emailSettings.Password);
           await client.SendAsync(message);

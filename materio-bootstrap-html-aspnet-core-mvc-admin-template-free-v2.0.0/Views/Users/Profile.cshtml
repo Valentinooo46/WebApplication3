@@ -1,0 +1,14 @@
+@model AspnetCoreMvcFull.Models.ViewModels.UserProfileViewModel
+@{
+ ViewData["Title"] = "User profile";
+}
+<div class="container">
+ <h3>Профіль користувача</h3>
+ <div class="card">
+ <div class="card-body">
+ <p><strong>Email:</strong> @Model.Email</p>
+ <p><strong>UserName:</strong> @Model.UserName</p>
+ <p><strong>Phone:</strong> @Model.PhoneNumber</p>
+ </div>
+ </div>
+</div>

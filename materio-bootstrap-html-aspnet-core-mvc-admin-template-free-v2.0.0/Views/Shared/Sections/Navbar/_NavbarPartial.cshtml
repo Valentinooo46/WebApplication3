@@ -27,7 +27,10 @@
 	<div class="navbar-nav align-items-center">
 		<div class="nav-item d-flex align-items-center">
 			<i class="ri-search-line ri-22px me-2 lh-0"></i>
-			<input type="text" class="form-control border-0 shadow-none bg-body" placeholder="Search..." aria-label="Search...">
+			<form asp-controller="Users" asp-action="Search" method="get" class="d-flex">
+				<input type="text" name="q" class="form-control border-0 shadow-none bg-body" placeholder="Search users by email..." />
+				<button class="btn btn-link ms-2 p-0"><i class="ri-arrow-right-line"></i></button>
+			</form>
 		</div>
 	</div>
 	<!-- /Search -->

@@ -1,0 +1,35 @@
+@model AspnetCoreMvcFull.Models.ViewModels.UsersSearchViewModel
+@{
+ ViewData["Title"] = "Users - Search";
+}
+<div class="container">
+ <h3>Пошук користувачів</h3>
+ <form method="get" asp-action="Search" asp-controller="Users" class="mb-3">
+ <div class="input-group">
+ <input type="text" name="q" value="@Model.Query" class="form-control" placeholder="Пошук по email" />
+ <button class="btn btn-outline-primary" type="submit">Пошук</button>
+ </div>
+ </form>
+
+ <div>
+ @if (Model.Results == null || !Model.Results.Any())
+ {
+ <div class="alert alert-info">Результатів не знайдено</div>
+ }
+ else
+ {
+ <ul class="list-group">
+ @foreach (var u in Model.Results)
+ {
+ <li class="list-group-item d-flex justify-content-between align-items-center">
+ <div>
+ <strong>@u.Email</strong>
+ <div class="text-muted">@u.UserName</div>
+ </div>
+ <a asp-action="Profile" asp-controller="Users" asp-route-id="@u.Id" class="btn btn-sm btn-outline-secondary">View</a>
+ </li>
+ }
+ </ul>
+ }
+ </div>
+</div>
